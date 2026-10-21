@@ -1,0 +1,7 @@
+streamlit>=1.40
+openai>=1.40
+tavily-python>=0.5
+requests>=2.31
+python-dotenv>=1.0
+pandas>=2.0
+pydeck>=0.9

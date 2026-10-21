@@ -1,0 +1,48 @@
+name: Haze alerts
+
+# Checks your watchlist every 30 minutes and sends Telegram alerts,
+# even when the Streamlit app is closed.
+# Setup: Settings > Secrets and variables > Actions, add
+#   NEBIUS_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+# and commit your watchlist.json (download it from the app's Alerts tab).
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Remember which places already alerted, so you aren't spammed every 30 minutes
+      - name: Restore alert state
+        uses: actions/cache/restore@v4
+        with:
+          path: .alert_state.json
+          key: alert-state-${{ github.run_id }}
+          restore-keys: alert-state-
+
+      - name: Check haze and send alerts
+        env:
+          NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python notifier.py
+
+      - name: Save alert state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .alert_state.json
+          key: alert-state-${{ github.run_id }}

@@ -1,0 +1,10 @@
+{
+  "threshold": 100,
+  "profile": "General public",
+  "cities": [
+    "Singapore, Singapore",
+    "Kuala Lumpur, Malaysia",
+    "Jakarta, Indonesia"
+  ],
+  "custom_cities": []
+}
