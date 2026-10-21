@@ -186,18 +186,57 @@ def fetch_forecast(lat: float, lon: float, hours: int = 48) -> dict:
         return result
 
 
+def fetch_forecasts(cities: list[dict], hours: int = 48, current: dict | None = None) -> dict:
+    """Forecasts for several places in one request. Returns {"Name, Country": forecast}.
+
+    `current` ({"Name, Country": value}) only shapes the offline sample curves,
+    so they start near today's reading.
+    """
+    out: dict = {}
+    if not cities:
+        return out
+    current = current or {}
+    params = {
+        "latitude": ",".join(str(c["lat"]) for c in cities),
+        "longitude": ",".join(str(c["lon"]) for c in cities),
+        "hourly": "us_aqi,pm2_5",
+        "current": "us_aqi",
+        "forecast_days": 3,
+        "timezone": ",".join(["auto"] * len(cities)),
+    }
+    try:
+        resp = requests.get(OPEN_METEO_AQ_URL, params=params, headers=HEADERS, timeout=TIMEOUT)
+        resp.raise_for_status()
+        payload = resp.json()
+        blocks = payload if isinstance(payload, list) else [payload]
+        for city, block in zip(cities, blocks):
+            key = _key(city["name"], city["country"])
+            fc = parse_open_meteo_hourly(block or {}, hours)
+            if fc["times"]:
+                fc["source"] = "live"
+            else:
+                fc = sample_forecast(city["lat"], city["lon"], hours, current.get(key))
+            out[key] = fc
+    except Exception as exc:
+        for city in cities:
+            key = _key(city["name"], city["country"])
+            out[key] = {**sample_forecast(city["lat"], city["lon"], hours, current.get(key)), "error": str(exc)}
+    return out
+
+
 def sample_forecast(lat: float, lon: float, hours: int = 48, base: float | None = None) -> dict:
     """A smooth, repeatable made-up curve so the forecast view works offline."""
+    seed = abs(int(lat * 100 + lon * 10))
     if base is None:
-        base = 60 + (abs(int(lat * 7 + lon * 3)) % 90)
+        base = 60 + (seed % 90)
+    slope = ((seed % 7) - 3) * 0.45  # some places get better, some worse
     start = datetime.now().replace(minute=0, second=0, microsecond=0)
     times, aqi, pm25 = [], [], []
     for h in range(hours):
         t = start + timedelta(hours=h)
         # haze tends to build overnight and ease in the afternoon
-        daily = 25 * math.cos((t.hour - 4) / 24 * 2 * math.pi)
-        trend = -0.6 * h
-        value = max(15, base + daily + trend)
+        daily = 0.18 * base * (math.cos((t.hour - 4) / 24 * 2 * math.pi) - math.cos((start.hour - 4) / 24 * 2 * math.pi))
+        value = max(12, base + daily + slope * h)
         times.append(t.strftime("%Y-%m-%dT%H:%M"))
         aqi.append(round(value))
         pm25.append(round(value / 2.9, 1))

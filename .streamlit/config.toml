@@ -1,9 +1,60 @@
-[theme]
-primaryColor = "#e8590c"
-font = "sans serif"
-
 [server]
 headless = true
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+# PHAZE theme: clear-sky blue for actions, warm colours only for air quality data
+[theme]
+base = "light"
+primaryColor = "#2D6CA2"
+backgroundColor = "#EEF1F2"
+secondaryBackgroundColor = "#E2E8EC"
+textColor = "#1E2D3B"
+linkColor = "#2D6CA2"
+borderColor = "#D3DADF"
+showWidgetBorder = true
+baseRadius = "12px"
+buttonRadius = "full"
+font = "Atkinson Hyperlegible Next"
+headingFont = "Parkinsans"
+headingFontWeights = [650, 650, 600, 600, 600, 600]
+baseFontSize = 16
+metricValueFontSize = "1.9rem"
+metricValueFontWeight = 650
+greenColor = "#3F9E62"
+yellowColor = "#E2B13C"
+orangeColor = "#EC8A35"
+redColor = "#DA4A3B"
+violetColor = "#8C4BA0"
+blueColor = "#2D6CA2"
+grayColor = "#8A96A0"
+dataframeHeaderBackgroundColor = "#E8EDF0"
+
+[theme.sidebar]
+backgroundColor = "#F7F9F9"
+secondaryBackgroundColor = "#EEF1F2"
+borderColor = "#D3DADF"
+
+# Fonts are bundled in static/fonts (SIL Open Font Licence), so they work offline and when deployed
+[[theme.fontFaces]]
+family = "Atkinson Hyperlegible Next"
+url = "app/static/fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2"
+weight = "200 800"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Atkinson Hyperlegible Next"
+url = "app/static/fonts/atkinson-hyperlegible-next-latin-wght-italic.woff2"
+weight = "200 800"
+style = "italic"
+
+[[theme.fontFaces]]
+family = "Parkinsans"
+url = "app/static/fonts/parkinsans-latin-wght-normal.woff2"
+weight = "300 800"
+style = "normal"

@@ -265,8 +265,8 @@ def ask(llm: LLM, question: str, context: str, history: list[dict] | None = None
 
     answer = llm.chat(msgs, tier=tier, agent=f"Ask ({tier})", max_tokens=700, temperature=0.3)
     if not answer:
-        answer = ("I'm in demo mode, so I can't answer free-form questions yet. Add a NEBIUS_API_KEY in your .env "
-                  "to switch on Nemotron. Meanwhile, the map and alerts tabs show live readings.")
+        answer = ("The AI is off, so I can't answer questions yet. Add a NEBIUS_API_KEY to your .env file "
+                  "to switch on Nemotron. Meanwhile, the Now, Map and Alerts pages show the latest readings.")
         tier = "demo"
     return {"answer": answer, "tier": tier, "route": route,
             "sources": [{"title": s["title"], "url": s["url"]} for s in sources]}

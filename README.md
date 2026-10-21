@@ -1,6 +1,6 @@
 # 🌫️ PHAZE
 
-*HAZE IS JUST A PHASE, get alerted when the air leaves the healthy range.**
+**HAZE IS JUST A PHASE.** Get alerted when the air leaves the healthy range.
 
 Built for the **Nebius x NVIDIA Global AI Hackathon 2026** · Track: **Best Apps and Agents**
 Powered by **NVIDIA Nemotron 3 (Nano + Super)** on **Nebius Token Factory**, with **Tavily** web search.
@@ -23,17 +23,26 @@ Checking official websites by hand doesn't scale, and generic air quality apps d
 
 ## What it does
 
-| Tab | What you get |
+| Page | What you get |
 |---|---|
-| 🌍 **World map** | Live US AQI and PM2.5 for 29 haze hotspots and major cities, coloured by health level |
-| 🇸🇬 **Singapore PSI** | Official 24-hour PSI from NEA for all 5 regions, with what each level means |
-| 🔔 **My alerts** | A watchlist (add any city on Earth), your own limit, and instant notifications: in-app pop-ups plus optional **Telegram** push to your phone. Each alert is written by Nemotron for *your* situation (e.g. elderly, children, asthma) |
-| 📈 **48-hour outlook** | A forecast chart against your limit. Nemotron Super finds the safest times for your plans (commute, exercise, kids' play) |
-| 📰 **Haze news** | Tavily searches the latest news; Nemotron Super explains the causes and outlook, **with citations** |
-| 💬 **Ask** | Ask anything ("Is it safe to jog tonight?"). A Nemotron Nano router decides whether Nano can answer or Super is needed |
-| ⚙️ **Under the hood** | Every model call: which model, tokens, latency and cost, and how much work Nano handled |
+| **Now** | The sky over the place you pick, drawn from its air quality, with the reading in the sun. Below it: what today means for exercise, commuting, windows and kids' play, Singapore's PSI by region (or a 48-hour strip for other places), your watched places with where each is heading, and the world's worst air right now |
+| **Map** | Live US AQI and PM2.5 for 29 haze hotspots and major cities, filterable by region, with a ranked list beside the map |
+| **Plan** | A 48-hour forecast, hour by hour and as a chart against your limit. Nemotron Super finds the clearest times for your plans (commute, exercise, kids' play) |
+| **News** | Tavily searches the latest news; Nemotron Super explains the causes and what happens next, **with citations** |
+| **Ask** | Ask anything ("Is it safe to jog tonight?"). A Nemotron Nano router decides whether Nano can answer or Super is needed |
+| **Alerts** | Your watchlist (add any city on Earth) and instant notifications: in-app pop-ups plus optional **Telegram** push to your phone. Each alert is written by Nemotron for *your* situation (e.g. elderly, children, asthma), and the history shows every one |
+| **How it works** | Which model does which job, and every model call this session: tokens, latency, cost, and how much work Nano handled |
 
 Plus **`notifier.py`**: a background checker that sends Telegram alerts even when the app is closed (runs on GitHub Actions or as a Nebius Serverless Job).
+
+## Design
+
+**The sky is the interface.** The Now page draws the sky over your place from live data. In clean air it's blue, the sun is bright and the skyline is crisp. As the reading rises, the sky warms and dims, haze thickens, the sun flattens into an orange disc, and the city fades from view, the way it does on a real haze day. The reading sits in the sun, crossed by the same haze lines as the PHAZE logo.
+
+- **Colour means something.** Clear-sky blue is used for the brand, links and buttons. Warm colours only ever come from air quality data, following the familiar US EPA order (green, yellow, orange, red, purple, maroon). Every colour is paired with words, so nothing relies on colour alone.
+- **Plain language first.** Every number comes with what it means for you. Headlines are sentences ("The air in Singapore is unhealthy"), and advice follows NEA and US EPA guidance.
+- **Type chosen for the audience.** Body text is [Atkinson Hyperlegible Next](https://www.brailleinstitute.org/freefont/), designed by the Braille Institute for low-vision readers, so look-alike characters such as 1, l and I, or 0 and O, are easy to tell apart. Headings use [Parkinsans](https://github.com/redstonedesign/parkinsans), a warm, human typeface made for Parkinson's UK. Both are bundled in `static/fonts` under the SIL Open Font Licence, so they work offline.
+- **Works on a phone.** Layouts reflow down to phone width, motion is limited to a slow haze drift that stops if you've asked your device to reduce motion, and the AI's work is always labelled ("Written by Nemotron Nano").
 
 ## How it uses NVIDIA Nemotron and Nebius Token Factory
 
@@ -136,20 +145,31 @@ pip install pytest
 python -m pytest -q
 ```
 
-The tests run offline. They cover data parsing, health bands, clean-air windows, model routing (with a fake Token Factory client), fallbacks and alert de-duplication.
+The tests run offline. They cover data parsing, health bands, clean-air windows, model routing (with a fake Token Factory client), fallbacks, alert de-duplication, the everyday advice, forecast trends, and the interface pieces (including that text from users, data and models is always escaped).
 
 ## Project structure
 
 ```
-app.py                  Streamlit app (7 tabs)
+app.py                  Entry point: page setup, sidebar, navigation, background alert checker
+views/                  One file per page, so teammates can work on pages separately
+  now.py  map.py  plan.py  news.py  ask.py  alerts.py  how.py
 notifier.py             Background alert checker (CLI)
 phaze/
   llm.py                Token Factory client, Nano/Super routing, usage tracking
   agents.py             Alert writer, outdoor planner, haze reporter, Ask router
-  data.py               NEA PSI, Open-Meteo AQI/forecast, geocoding, offline fallbacks
-  bands.py              PSI and US AQI health levels
+  data.py               NEA PSI, Open-Meteo AQI and forecasts, geocoding, offline fallbacks
+  watch.py              Readings for your watched places (shared by the app and notifier.py)
+  guidance.py           Everyday advice per level, and forecast trends
+  bands.py              PSI and US AQI health levels, colours and scale positions
   cities.py             Default places to track
   notify.py             Telegram push and alert de-duplication
+  state.py              Session state and cached data for the app
+  ui.py                 Interface pieces (the sky, region map, lists, alert timeline...)
+  charts.py             Forecast chart and world map
+  style.css             All of PHAZE's styles
+static/                 Logo, icon and bundled fonts (served by Streamlit)
+tools/make_logo.py      Rebuilds the logo SVGs from the Parkinsans font
+.streamlit/config.toml  Theme: colours, fonts, corner radius
 sample_data/            Offline fallback data
 tests/                  Offline test suite
 ```
@@ -160,6 +180,8 @@ tests/                  Offline test suite
 - **World air quality and forecasts**: [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api), using Copernicus Atmosphere Monitoring Service (CAMS) data. Free for non-commercial use.
 - **News search**: [Tavily](https://tavily.com)
 - **AI models**: NVIDIA Nemotron 3 Nano and Super, served by [Nebius Token Factory](https://nebius.com/services/token-factory)
+- **Fonts**: Atkinson Hyperlegible Next (Braille Institute) and Parkinsans (Red Stone for Parkinson's UK), both under the SIL Open Font Licence. Licence files are in `static/fonts`.
+- **Icons**: Material Symbols, which ship with Streamlit
 
 PSI (Singapore) and US AQI (elsewhere) both treat anything above 100 as outside the healthy range, but they are calculated differently, so compare them with care.
 
