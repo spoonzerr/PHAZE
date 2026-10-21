@@ -1,6 +1,6 @@
 # 🌫️ PHAZE
 
-**Track haze anywhere in the world, and get alerted the moment the air near you leaves the healthy range.**
+*HAZE IS JUST A PHASE, get alerted when the air leaves the healthy range.**
 
 Built for the **Nebius x NVIDIA Global AI Hackathon 2026** · Track: **Best Apps and Agents**
 Powered by **NVIDIA Nemotron 3 (Nano + Super)** on **Nebius Token Factory**, with **Tavily** web search.
