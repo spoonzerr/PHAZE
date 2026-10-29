@@ -5,7 +5,7 @@
 Built for the **Nebius x NVIDIA Global AI Hackathon 2026** · Track: **Best Apps and Agents**
 Powered by **NVIDIA Nemotron 3 (Nano + Super)** on **Nebius Token Factory**, with **Tavily** web search.
 
-   > Demo video: _add your YouTube link here_ · Live app: https://phaze-nvidia.streamlit.app/
+   > Demo video: https://youtu.be/b-aRbI2U--w · Live app: https://phaze-nvidia.streamlit.app/
 
 ---
 
